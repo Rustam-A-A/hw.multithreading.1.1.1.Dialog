@@ -1,19 +1,26 @@
+import java.util.*;
+import java.util.concurrent.*;
+
 public class Main {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
 
-    public static void main(String[] args) throws InterruptedException {
         final int THREAD_NUMBER = 4;
-        final int TIME_TO_SLEEP = 15000;
+        int coreCount = Runtime.getRuntime().availableProcessors();
+        final ExecutorService threadPool = Executors.newFixedThreadPool(coreCount);
 
-        Runnable myRunnable = new MyThread();
-        ThreadGroup threadGroup = new ThreadGroup("main group");
+        List <Callable<Integer>> callables = new ArrayList<>();
 
         for (int i = 0; i < THREAD_NUMBER; i++){
-            final Thread thread = new Thread(threadGroup, myRunnable);
-            thread.setName("thread #" + i);
-            thread.start();
+            final Callable<Integer> myCallable =new MyCallable();
+            callables.add(myCallable);
         }
 
-        Thread.sleep(TIME_TO_SLEEP);
-        threadGroup.interrupt();
+        System.out.println("\n Метод invokeAll()");
+        List<Future<Integer>> resultAll = threadPool.invokeAll(callables);
+
+        System.out.println("\n Метод invokeAny()");
+        Integer resultAny = threadPool.invokeAny(callables);
+
+        threadPool.shutdown();
     }
 }
